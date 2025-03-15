@@ -6,34 +6,31 @@ import { PrismaClient } from '@prisma/client'
 export default async function signup(req:Request, res:Response){
     
     const client = new PrismaClient()
-    
+
     const UserInput = z.object({
-        userName: z.string().max(30).min(3).trim().toLowerCase(),
+        email: z.string().email().max(30).min(3).trim().toLowerCase(),
         password:z.string().min(6),
         firstName:z.string().trim().max(40),
         lastName:z.string().trim().max(40),
-        amount: z.number().positive().min(1).max(10000),
-        transactionPin:z.number().positive().min(1).max(999999)
+        phone:z.string().length(10).optional()
     })
 
     const isValid = UserInput.safeParse({
-        userName:req.body.userName,
+        email:req.body.email,
         password:req.body.password,
         firstName:req.body.firstName,
         lastName:req.body.lastName,
-        amount:req.body.amount,
-        transactionPin:req.body.transactionPin
+        phone:req.body.phone
     })
 
     if(!isValid.success){
         const errorMessage = isValid.error.formErrors
         res.status(411).json({
-            userName:errorMessage.fieldErrors.userName,
+            email:errorMessage.fieldErrors.email,
             password:errorMessage.fieldErrors.password,
             firstName:errorMessage.fieldErrors.firstName,
             lastName:errorMessage.fieldErrors.lastName,
-            amount:errorMessage.fieldErrors.amount,
-            transactionPin:errorMessage.fieldErrors.transactionPin
+            phone:errorMessage.fieldErrors.phone
         })
 
         return;
@@ -41,24 +38,26 @@ export default async function signup(req:Request, res:Response){
 
 
     try{
+
+        const exist = await client.user.findFirst({where:{email:req.body.email}})
+        if(exist){
+            res.status(403).json({
+                message:"email already exist"
+            })
+            return;
+        }
+
+        const fullName = req.body.firstName.trim() +" " +req.body.lastName.trim()
+
         const hashedPassword = await bcrypt.hash(req.body.password,5);
-        const hashedPin = await bcrypt.hash(String(req.body.transactionPin),6);
 
-        const userid = await UserModel.create({
-            userName:req.body.userName,
-            password:hashedPassword,
-            firstName:req.body.firstName,
-            lastName:req.body.lastName
-        })
+        const userid = await client.user.create({data:{
+            email:req.body.email,
+            passwordHash:hashedPassword,
+            name: fullName,
+            phone: req.body.phone
 
-        await AccountModel.create({
-            userId:userid._id,
-            balance:req.body.amount
-        })
-        
-        await PinModel.create({
-            userId:userid._id,
-            transactionPin:hashedPin
+        }
         })
 
         res.status(200).json({

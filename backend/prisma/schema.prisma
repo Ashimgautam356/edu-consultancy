@@ -17,6 +17,9 @@ datasource db {
 enum Role {
   STUDENT
   ADMIN
+  DOC_MANAGER
+  INSTRUCTOR
+  RECEPTIONIST
 }
 
 enum PaymentStatus {
@@ -186,4 +189,20 @@ model Testimonial {
   createdAt  DateTime @default(now())
 
   user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Countries{
+  id Int @id @default(autoincrement())
+  country String
+
+  universities Universities[]
+}
+
+model Universities{
+  id Int @id @default(autoincrement())
+  countryId Int
+  name String
+
+
+  countries Countries @relation(fields: [countryId],references: [id])
 }

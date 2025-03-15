@@ -1,0 +1,189 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+}
+
+enum PaymentMethod {
+  ONLINE
+  OFFLINE
+}
+
+enum ChatType {
+  PRIVATE
+  GROUP
+}
+
+enum DocumentStatus {
+  PENDING
+  SUBMITTED
+  VERIFIED
+}
+
+enum SessionStatus {
+  UPCOMING
+  COMPLETED
+}
+
+model User {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  email              String   @unique
+  passwordHash       String
+  phone              String?
+  role               Role     @default(STUDENT)
+  countryOfInterest  String? // Example: "USA, Canada"
+  paymentStatus      PaymentStatus @default(PENDING)
+  subscriptionExpiry DateTime?
+  profileCompleted   Boolean @default(false)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  payments           Payment[]
+  messages          Message[]
+  chatParticipants  ChatParticipant[]
+  liveSessions      LiveSessionParticipant[]
+  documents         Document[]
+  blogs             Blog[]
+  comments          Comment[]
+  testimonials      Testimonial[]
+
+  liveSessionsHosted LiveSession[] @relation("HostSessions")
+}
+
+model Payment {
+  id            Int            @id @default(autoincrement())
+  userId        Int
+  amount        Decimal
+  currency      String         @default("USD")
+  paymentMethod PaymentMethod
+  transactionId String         @unique
+  status        String         @default("PENDING")
+  createdAt     DateTime       @default(now())
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Chat {
+  id           Int      @id @default(autoincrement())
+  chatType     ChatType
+  createdAt    DateTime @default(now())
+
+  participants ChatParticipant[]
+  messages     Message[]
+}
+
+model ChatParticipant {
+  chatId  Int
+  userId  Int
+
+  chat    Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user    User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([chatId, userId])
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  chatId    Int
+  senderId  Int
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender    User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model LiveSession {
+  id            Int      @id @default(autoincrement())
+  title         String
+  description   String
+  hostId        Int
+  sessionDate   DateTime
+  duration      Int      @default(60) // in minutes
+  status        SessionStatus @default(UPCOMING)
+  recordingUrl  String? 
+  createdAt     DateTime @default(now())
+
+  host          User @relation(fields: [hostId], references: [id], onDelete: Cascade, name: "HostSessions")
+  participants  LiveSessionParticipant[]
+}
+
+model LiveSessionParticipant {
+  sessionId Int
+  userId    Int
+
+  session  LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([sessionId, userId])
+}
+
+model Document {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  documentType String
+  status       DocumentStatus @default(PENDING)
+  uploadedAt   DateTime @default(now())
+
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Blog {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  authorId    Int
+  tags        String? // Example: "USA, Scholarships"
+  publishedAt DateTime @default(now())
+  views       Int      @default(0)
+  likes       Int      @default(0)
+
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  comments    Comment[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  blogId    Int
+  userId    Int
+  text      String
+  createdAt DateTime @default(now())
+
+  blog      Blog @relation(fields: [blogId], references: [id], onDelete: Cascade)
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Testimonial {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  country    String
+  university String
+  text       String
+  photoUrl   String?
+  approved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user       User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

@@ -1,6 +1,7 @@
 import { Router } from "express";
-import signup from "../controllers/user/auth/signup";
-import signin from "../controllers/user/auth/signin";
+import signup from "../controllers/employee/auth/signup";
+import signin from "../controllers/employee/auth/signin";
+
 
 export const employeeRouter = Router()
 

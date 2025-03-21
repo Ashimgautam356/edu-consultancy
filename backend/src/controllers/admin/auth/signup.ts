@@ -1,7 +1,7 @@
 import { Request,Response } from 'express'
 import z from 'zod'
 import bcrypt from 'bcrypt'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient} from '@prisma/client'
 
 export default async function signup(req:Request, res:Response){
     
@@ -12,7 +12,7 @@ export default async function signup(req:Request, res:Response){
         password:z.string().min(6),
         firstName:z.string().trim().max(40),
         lastName:z.string().trim().max(40),
-        phone:z.string().length(10).optional()
+        phone:z.string().length(10)
     })
 
     const isValid = UserInput.safeParse({
@@ -51,18 +51,20 @@ export default async function signup(req:Request, res:Response){
 
         const hashedPassword = await bcrypt.hash(req.body.password,5);
 
-        const userid = await client.student.create({data:{
+        const userid = await client.admin.create({data:{
             email:req.body.email,
             passwordHash:hashedPassword,
             firstName:req.body.firstName,
             lastName:req.body.lastName,
-            phone: req.body.phone
+            phone: req.body.phone,
+            role:"ADMIN"
         }
         })
         
         await client.user.create({data:{
             email:req.body.email,
-            name:fullName
+            name:fullName,
+            role:"ADMIN"
         }})
 
         res.status(200).json({
@@ -72,7 +74,7 @@ export default async function signup(req:Request, res:Response){
     }catch(err:any){
         if(err?.code == 11000){
             res.status(411).json({
-                message:"user Already exist"
+                message:"employee email Already exist"
             })
             return 
         }

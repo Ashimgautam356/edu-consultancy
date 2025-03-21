@@ -5,6 +5,6 @@ import { adminRouter } from './admin';
 
 export const router =  express.Router();
 
-router.use('/user',userRouter)
+router.use('/student',userRouter)
 router.use('/employee',employeeRouter)
 router.use("/admin",adminRouter)

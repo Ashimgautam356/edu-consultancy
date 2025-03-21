@@ -27,7 +27,7 @@ export default async function signin(req:Request,res:Response){
     }
 
 
-    const isUserValid = await client.student.findFirst({where:{email:req.body.email}});
+    const isUserValid = await client.employee.findFirst({where:{email:req.body.email}});
     if(!isUserValid){
         res.status(404).json({
             message:"user not availabel"

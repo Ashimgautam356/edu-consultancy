@@ -248,15 +248,15 @@ model Testimonial {
 
 model Countries{
   id Int @id @default(autoincrement())
-  country String
+  country String @unique
 
   universities Universities[]
 }
 
 model Universities{
   id Int @id @default(autoincrement())
-  countryId Int
-  name String
+  name String @unique
+  countryId Int 
 
 
   countries Countries @relation(fields: [countryId],references: [id])

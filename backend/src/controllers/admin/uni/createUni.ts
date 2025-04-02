@@ -3,7 +3,7 @@ import z from 'zod'
 import bcrypt from 'bcrypt'
 import { PrismaClient} from '@prisma/client'
 
-export default async function createUsers(req:Request, res:Response){
+export default async function createUni(req:Request, res:Response){
     
     const client = new PrismaClient()
 
@@ -13,7 +13,7 @@ export default async function createUsers(req:Request, res:Response){
     })
 
     const isValid = UserInput.safeParse({
-        coutryId:req.body.countryId,
+        countryId:req.body.countryId,
         uniName:req.body.uniName
     })
 

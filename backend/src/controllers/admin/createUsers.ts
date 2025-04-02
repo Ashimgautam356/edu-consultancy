@@ -53,65 +53,56 @@ export default async function createUsers(req:Request, res:Response){
         const fullName = req.body.firstName.trim() +" " +req.body.lastName.trim()
 
         const hashedPassword = await bcrypt.hash(req.body.password,5);
-        
-        if(req.body.role === "STUDENT" ){
-             await client.student.create({data:{
-                email:req.body.email,
-                passwordHash:hashedPassword,
-                firstName:req.body.firstName,
-                lastName:req.body.lastName,
-                phone: req.body.phone,
+
+        await client.$transaction(async (tx) => {
+            if (req.body.role === "STUDENT") {
+                await tx.student.create({
+                    data: {
+                        email: req.body.email,
+                        passwordHash: hashedPassword,
+                        firstName: req.body.firstName,
+                        lastName: req.body.lastName,
+                        phone: req.body.phone
+                    }
+                });
+
+                await tx.user.create({
+                    data: {
+                        email: req.body.email,
+                        name: fullName,
+                        role: "STUDENT"
+                    }
+                });
+            } else {
+                await tx.employee.create({
+                    data: {
+                        email: req.body.email,
+                        passwordHash: hashedPassword,
+                        firstName: req.body.firstName,
+                        lastName: req.body.lastName,
+                        phone: req.body.phone,
+                        role: req.body.role
+                    }
+                });
+
+                await tx.user.create({
+                    data: {
+                        email: req.body.email,
+                        name: fullName,
+                        role: req.body.role
+                    }
+                });
             }
-            })
-            
-            await client.user.create({data:{
-                email:req.body.email,
-                name:fullName,
-                role:"STUDENT"
-            }})
-    
-            res.status(200).json({
-                message:"signup sucessfull"
-            })
+        });
 
-            return
+        res.status(200).json({ message: "Signup successful" });
+    } catch (err: any) {
+        if (err?.code === "P2002") { 
+            return res.status(411).json({ message: "Email already exists" });
         }
 
-         await client.employee.create({data:{
-            email:req.body.email,
-            passwordHash:hashedPassword,
-            firstName:req.body.firstName,
-            lastName:req.body.lastName,
-            phone: req.body.phone,
-            role:req.body.role
-        }
-        })
-        
-        await client.user.create({data:{
-            email:req.body.email,
-            name:fullName,
-            role:req.body.role
-        }})
-
-        res.status(200).json({
-            message:"signup sucessfull"
-        })
-
-       
-
-    }catch(err:any){
-        if(err?.code == 11000){
-            res.status(411).json({
-                message:"employee email Already exist"
-            })
-            return 
-        }
-
-        console.log(err)
-        res.status(500).json({
-            message:"internal server error",
-            error:err
-        })
+        console.error(err);
+        res.status(500).json({ message: "Internal server error", error: err });
     }
 
 

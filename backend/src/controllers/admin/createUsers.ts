@@ -1,9 +1,9 @@
 import { Request,Response } from 'express'
 import z from 'zod'
 import bcrypt from 'bcrypt'
-import { PrismaClient, Role} from '@prisma/client'
+import { PrismaClient} from '@prisma/client'
 
-export default async function signup(req:Request, res:Response){
+export default async function createUsers(req:Request, res:Response){
     
     const client = new PrismaClient()
 

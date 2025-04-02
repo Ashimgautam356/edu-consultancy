@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.adminRouter = void 0;
+const express_1 = require("express");
+const signup_1 = __importDefault(require("../controllers/admin/auth/signup"));
+const signin_1 = __importDefault(require("../controllers/admin/auth/signin"));
+const authenticate_1 = require("../middleware/authenticate");
+const addCountry_1 = __importDefault(require("../controllers/admin/addCountry"));
+const createUsers_1 = __importDefault(require("../controllers/admin/createUsers"));
+const DeleteUsers_1 = __importDefault(require("../controllers/admin/DeleteUsers"));
+exports.adminRouter = (0, express_1.Router)();
+exports.adminRouter.post("/signup", signup_1.default);
+exports.adminRouter.post("/signin", signin_1.default);
+exports.adminRouter.use(authenticate_1.auth);
+exports.adminRouter.post("/add-country", addCountry_1.default);
+exports.adminRouter.post("/create-user", createUsers_1.default);
+exports.adminRouter.delete('/delete-user', DeleteUsers_1.default);

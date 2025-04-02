@@ -51,7 +51,7 @@ export default async function signup(req:Request, res:Response){
 
         const hashedPassword = await bcrypt.hash(req.body.password,5);
 
-        const userid = await client.admin.create({data:{
+         await client.admin.create({data:{
             email:req.body.email,
             passwordHash:hashedPassword,
             firstName:req.body.firstName,

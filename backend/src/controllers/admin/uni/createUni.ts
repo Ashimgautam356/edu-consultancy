@@ -3,23 +3,25 @@ import z from 'zod'
 import bcrypt from 'bcrypt'
 import { PrismaClient} from '@prisma/client'
 
-export default async function addCountry(req:Request, res:Response){
+export default async function createUsers(req:Request, res:Response){
     
     const client = new PrismaClient()
 
     const UserInput = z.object({
-        country:z.string()
-
+        countryId: z.number(),
+        uniName:z.string()
     })
 
     const isValid = UserInput.safeParse({
-        country:req.body.country
+        coutryId:req.body.countryId,
+        uniName:req.body.uniName
     })
 
     if(!isValid.success){
         const errorMessage = isValid.error.formErrors
         res.status(411).json({
-            country:errorMessage.fieldErrors.country
+            countryId:errorMessage.fieldErrors.countryId,
+            uniName:errorMessage.fieldErrors.uniName
         })
 
         return;
@@ -28,20 +30,22 @@ export default async function addCountry(req:Request, res:Response){
 
     try{
 
-        const exist = await client.countries.findFirst({where:{country:req.body.country}})
+        const exist = await client.universities.findFirst({where:{name:req.body.uniName}})
         if(exist){
             res.status(403).json({
-                message:"country already exist"
+                message:"uni already exist"
             })
             return;
         }
         
-        await client.countries.create({data:{
-
-            country:req.body.country
+        
+        await client.universities.create({data:{
+            countryId:req.body.countryId,
+            name:req.body.uniName
         }})
+
         res.status(200).json({
-            message:"country added"
+            message:"inserted"
         })
 
        
@@ -49,7 +53,7 @@ export default async function addCountry(req:Request, res:Response){
     }catch(err:any){
         if(err?.code == 11000){
             res.status(411).json({
-                message:"country already exists"
+                message:"uni Already exist"
             })
             return 
         }

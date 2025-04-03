@@ -1,6 +1,7 @@
 import {WebSocketServer,WebSocket} from 'ws'
 import jwt from 'jsonwebtoken'
 import {PrismaClient} from '@prisma/client'
+import { number, string } from 'zod';
 
 
 const wss = new WebSocketServer({port:8080})
@@ -10,7 +11,7 @@ const client  = new PrismaClient();
 interface User{
     ws:WebSocket,
     rooms:string[],
-    userId: string,
+    userId: number,
 }
 
 const users: User[]=[];
@@ -21,7 +22,6 @@ function checkUser(token:string): string | null{
     try{
 
         const decoded = jwt.verify(token,`${process.env.JWT_SECRET}`);
-        console.log(decoded)
         if(typeof decoded =='string'){
             return null;
         }
@@ -44,8 +44,9 @@ wss.on('connection',function connection(ws,request){
 
     const queryParams = new URLSearchParams(url.split('?')[1]);
     const token = queryParams.get('token')?? "";
-    const userId = checkUser(token);
+    const userId = checkUser(token) as unknown as number;
     
+    // here we have to check is this user is in the db or not 
     if(userId == null){
         ws.close()
         return null; 
@@ -84,13 +85,30 @@ wss.on('connection',function connection(ws,request){
         const roomId = parsedData.roomId;
         const message = parsedData.message; 
 
-        // await client.chat.create({
-        //     data:{
-        //         roomId,
-        //         message,
-        //         userId
-        //     }
-        // }) 
+        // this arch is slow i have to put this in a que to make it more optimitze
+
+        const existingParticipant = await client.chatParticipant.findUnique({
+            where: {
+              chatId_userId: { chatId: roomId, userId: userId }
+            }
+          });
+          
+          if (!existingParticipant) {
+            await client.chatParticipant.create({
+              data: {
+                chatId: roomId,
+                userId: userId,
+              }
+            });
+          }
+          
+        await client.message.create({
+            data:{
+                chatId:roomId, 
+                senderId:userId,
+                message: message
+            }
+        })
 
         users.forEach(user=>{
             if(user.rooms.includes(roomId)){

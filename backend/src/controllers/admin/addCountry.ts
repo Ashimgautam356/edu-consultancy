@@ -36,9 +36,11 @@ export default async function addCountry(req:Request, res:Response){
             return;
         }
         
-        await client.chat.create({
+        const roomId = await client.chat.create({
             data:{
-                chatType:"GROUP"
+                chatType:"GROUP",
+                adminId:req.body.userId, 
+                roomLink: req.body.country
             }
         })
 
@@ -47,6 +49,7 @@ export default async function addCountry(req:Request, res:Response){
             country:req.body.country
         }})
         res.status(200).json({
+            roomId : roomId.id, 
             message:"country added"
         })
 

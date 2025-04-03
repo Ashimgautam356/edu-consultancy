@@ -21,7 +21,6 @@ const users = [];
 function checkUser(token) {
     try {
         const decoded = jsonwebtoken_1.default.verify(token, `${process.env.JWT_SECRET}`);
-        console.log(decoded);
         if (typeof decoded == 'string') {
             return null;
         }
@@ -43,6 +42,7 @@ wss.on('connection', function connection(ws, request) {
     const queryParams = new URLSearchParams(url.split('?')[1]);
     const token = (_a = queryParams.get('token')) !== null && _a !== void 0 ? _a : "";
     const userId = checkUser(token);
+    // here we have to check is this user is in the db or not 
     if (userId == null) {
         ws.close();
         return null;
@@ -72,13 +72,27 @@ wss.on('connection', function connection(ws, request) {
             if (parsedData.type === 'chat') {
                 const roomId = parsedData.roomId;
                 const message = parsedData.message;
-                // await client.chat.create({
-                //     data:{
-                //         roomId,
-                //         message,
-                //         userId
-                //     }
-                // }) 
+                // this arch is slow i have to put this in a que to make it more optimitze
+                const existingParticipant = yield client.chatParticipant.findUnique({
+                    where: {
+                        chatId_userId: { chatId: roomId, userId: userId }
+                    }
+                });
+                if (!existingParticipant) {
+                    yield client.chatParticipant.create({
+                        data: {
+                            chatId: roomId,
+                            userId: userId,
+                        }
+                    });
+                }
+                yield client.message.create({
+                    data: {
+                        chatId: roomId,
+                        senderId: userId,
+                        message: message
+                    }
+                });
                 users.forEach(user => {
                     if (user.rooms.includes(roomId)) {
                         user.ws.send(JSON.stringify({

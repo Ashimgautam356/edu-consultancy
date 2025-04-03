@@ -39,10 +39,18 @@ function addCountry(req, res) {
                 });
                 return;
             }
+            const roomId = yield client.chat.create({
+                data: {
+                    chatType: "GROUP",
+                    adminId: req.body.userId,
+                    roomLink: req.body.country
+                }
+            });
             yield client.countries.create({ data: {
                     country: req.body.country
                 } });
             res.status(200).json({
+                roomId: roomId.id,
                 message: "country added"
             });
         }

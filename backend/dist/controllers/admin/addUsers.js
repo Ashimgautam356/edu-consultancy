@@ -12,13 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = createUsers;
+exports.default = addUsers;
 const zod_1 = __importDefault(require("zod"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const client_1 = require("@prisma/client");
-function createUsers(req, res) {
+const client = new client_1.PrismaClient();
+function addUsers(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
-        const client = new client_1.PrismaClient();
         const UserInput = zod_1.default.object({
             email: zod_1.default.string().email().max(30).min(3).trim().toLowerCase(),
             password: zod_1.default.string().min(6),
@@ -100,7 +100,8 @@ function createUsers(req, res) {
         }
         catch (err) {
             if ((err === null || err === void 0 ? void 0 : err.code) === "P2002") {
-                return res.status(411).json({ message: "Email already exists" });
+                res.status(411).json({ message: "Email already exists" });
+                return;
             }
             console.error(err);
             res.status(500).json({ message: "Internal server error", error: err });

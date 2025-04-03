@@ -3,9 +3,9 @@ import z from 'zod'
 import bcrypt from 'bcrypt'
 import { PrismaClient} from '@prisma/client'
 
-export default async function createUsers(req:Request, res:Response){
+const client = new PrismaClient()
+export default async function addUsers(req:Request, res:Response){
     
-    const client = new PrismaClient()
 
     const UserInput = z.object({
         email: z.string().email().max(30).min(3).trim().toLowerCase(),
@@ -98,7 +98,8 @@ export default async function createUsers(req:Request, res:Response){
         res.status(200).json({ message: "Signup successful" });
     } catch (err: any) {
         if (err?.code === "P2002") { 
-            return res.status(411).json({ message: "Email already exists" });
+            res.status(411).json({ message: "Email already exists" });
+            return;
         }
 
         console.error(err);

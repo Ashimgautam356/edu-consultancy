@@ -1,6 +1,5 @@
 import { Request,Response } from 'express'
 import z from 'zod'
-import bcrypt from 'bcrypt'
 import { PrismaClient} from '@prisma/client'
 
 export default async function addCountry(req:Request, res:Response){

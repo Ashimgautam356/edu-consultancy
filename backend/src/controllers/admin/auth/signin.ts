@@ -28,13 +28,19 @@ export default async function signin(req:Request,res:Response){
 
 
     const isUserValid = await client.admin.findFirst({where:{email:req.body.email}});
+    const fromUserTable = await client.user.findFirst({where:{email:req.body.email}})
     if(!isUserValid){
         res.status(404).json({
             message:"user not availabel"
         })
         return;
     }
-
+    if(!fromUserTable){
+        res.status(404).json({
+            message:"user not availabel"
+        })
+        return;
+    }
     const isCorrectPassword = await bcrypt.compare(req.body.password,String(isUserValid.passwordHash))
     if(!isCorrectPassword){
         res.status(411).json({
@@ -44,7 +50,7 @@ export default async function signin(req:Request,res:Response){
     }
     
     const token = jwt.sign({
-        userId: isUserValid.id
+        userId: fromUserTable.id
     },`${process.env.JWT_SECRET}`)
 
     res.status(200).json({

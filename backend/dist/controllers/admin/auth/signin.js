@@ -37,7 +37,14 @@ function signin(req, res) {
             return;
         }
         const isUserValid = yield client.admin.findFirst({ where: { email: req.body.email } });
+        const fromUserTable = yield client.user.findFirst({ where: { email: req.body.email } });
         if (!isUserValid) {
+            res.status(404).json({
+                message: "user not availabel"
+            });
+            return;
+        }
+        if (!fromUserTable) {
             res.status(404).json({
                 message: "user not availabel"
             });
@@ -51,7 +58,7 @@ function signin(req, res) {
             return;
         }
         const token = jsonwebtoken_1.default.sign({
-            userId: isUserValid.id
+            userId: fromUserTable.id
         }, `${process.env.JWT_SECRET}`);
         res.status(200).json({
             message: "login sucessfull",

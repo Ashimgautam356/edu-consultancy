@@ -9,26 +9,19 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = getOldMessage;
+exports.default = getCoutnry;
 const client_1 = require("@prisma/client");
-function getOldMessage(req, res) {
+function getCoutnry(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const client = new client_1.PrismaClient();
-        const roomId = req.params.chatId;
         try {
-            const messages = yield client.message.findMany({
-                where: { id: roomId },
-                orderBy: {
-                    id: "desc"
-                },
-                take: 50
-            });
+            const countries = yield client.countries.findMany();
             res.status(200).json({
-                messages
+                countries
             });
         }
         catch (err) {
-            console.log("error");
+            console.log(err);
         }
     });
 }

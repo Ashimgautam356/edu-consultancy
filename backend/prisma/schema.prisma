@@ -124,7 +124,7 @@ model User{
   blogs             Blog[]
   comments          Comment[]
   testimonials      Testimonial[]
-
+  chat              Chat[]
   liveSessionsHosted LiveSession[] @relation("HostSessions")
 
 }
@@ -142,13 +142,19 @@ model Payment {
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model Chat {
+
+model Chat{
   id           Int      @id @default(autoincrement())
   chatType     ChatType
+  adminId      Int
+  roomLink     String @unique
   createdAt    DateTime @default(now())
-
+  
+  admin        User @relation(fields: [adminId], references: [id])
   participants ChatParticipant[]
   messages     Message[]
+
+
 }
 
 model ChatParticipant {

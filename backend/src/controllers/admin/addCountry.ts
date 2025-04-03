@@ -28,6 +28,7 @@ export default async function addCountry(req:Request, res:Response){
     try{
 
         const exist = await client.countries.findFirst({where:{country:req.body.country}})
+
         if(exist){
             res.status(403).json({
                 message:"country already exist"
@@ -35,6 +36,12 @@ export default async function addCountry(req:Request, res:Response){
             return;
         }
         
+        await client.chat.create({
+            data:{
+                chatType:"GROUP"
+            }
+        })
+
         await client.countries.create({data:{
 
             country:req.body.country

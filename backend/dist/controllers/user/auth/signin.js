@@ -53,10 +53,13 @@ function signin(req, res) {
         const token = jsonwebtoken_1.default.sign({
             userId: isUserValid.id
         }, `${process.env.JWT_SECRET}`);
-        res.status(200).json({
-            message: "login sucessfull",
-            name: isUserValid.firstName,
-            token: token
+        res.cookie("authToken", token, {
+            httpOnly: true, // Prevents JavaScript access (XSS protection)
+            secure: process.env.NODE_ENV === "production", // Only send on HTTPS in production
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // Expires in 7 days
         });
+        res.status(200).json({ message: "Login successful" });
+        ;
     });
 }

@@ -5,10 +5,10 @@ import 'dotenv/config'
 
 export async function auth(req:Request,res:Response,next:NextFunction) {
     
-    const token = req.headers.token as String | any; 
+    const token = req.cookies.authToken as String | any; 
     if(!token){
-        res.status(403).json({
-            message:"token not found"
+        res.status(401).json({
+            message:"unauthorized"
         })
         return; 
     }

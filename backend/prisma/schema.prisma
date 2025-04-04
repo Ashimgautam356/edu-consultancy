@@ -149,9 +149,9 @@ model Chat{
   adminId      Int
   roomLink     String @unique
   createdAt    DateTime @default(now())
-  chatName     String 
+  chatName     String   @default("Untitled Chat")
   image        String? 
-  
+
   admin        User @relation(fields: [adminId], references: [id])
   participants ChatParticipant[]
   messages     Message[]

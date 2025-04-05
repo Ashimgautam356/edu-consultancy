@@ -45,7 +45,7 @@ wss.on('connection',function connection(ws,request){
     const queryParams = new URLSearchParams(url.split('?')[1]);
     const token = queryParams.get('token')?? "";
     const userId = checkUser(token) as unknown as number;
-    
+    console.log(userId)
     // here we have to check is this user is in the db or not 
     if(userId == null){
         ws.close()
@@ -71,6 +71,8 @@ wss.on('connection',function connection(ws,request){
 
         const user = users.find(x => x.ws ===ws )
         user?.rooms.push(parsedData.roomId);
+
+        console.log("joined rood chatId is", parsedData.roomId )
     }
 
     if(parsedData.type === 'leave-room'){
@@ -83,8 +85,8 @@ wss.on('connection',function connection(ws,request){
     }
     if(parsedData.type === 'chat'){
         const roomId = parsedData.roomId;
-        const message = parsedData.message; 
-
+        const message = JSON.parse(parsedData.message); 
+        console.log(message)
         // this arch is slow i have to put this in a que to make it more optimitze
 
         const existingParticipant = await client.chatParticipant.findUnique({
@@ -106,7 +108,7 @@ wss.on('connection',function connection(ws,request){
             data:{
                 chatId:roomId, 
                 senderId:userId,
-                message: message
+                message: message.newMessage
             }
         })
 
@@ -114,7 +116,7 @@ wss.on('connection',function connection(ws,request){
             if(user.rooms.includes(roomId)){
                 user.ws.send(JSON.stringify({
                     type:"chat",
-                    message:message,
+                    message:message.newMessage,
                     roomId
                 }))
             }

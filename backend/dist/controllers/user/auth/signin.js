@@ -37,7 +37,14 @@ function signin(req, res) {
             return;
         }
         const isUserValid = yield client.student.findFirst({ where: { email: req.body.email } });
+        const fromUserTable = yield client.user.findFirst({ where: { email: req.body.email } });
         if (!isUserValid) {
+            res.status(404).json({
+                message: "user not availabel"
+            });
+            return;
+        }
+        if (!fromUserTable) {
             res.status(404).json({
                 message: "user not availabel"
             });
@@ -51,15 +58,19 @@ function signin(req, res) {
             return;
         }
         const token = jsonwebtoken_1.default.sign({
-            userId: isUserValid.id
+            userId: fromUserTable.id
         }, `${process.env.JWT_SECRET}`);
         res.cookie("authToken", token, {
             httpOnly: true, // Prevents JavaScript access (XSS protection)
-            secure: process.env.NODE_ENV === "production", // Only send on HTTPS in production
+            secure: false, // Only send on HTTPS in production
             sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000, // Expires in 7 days
         });
-        res.status(200).json({ message: "Login successful" });
+        const userInfo = {
+            fullName: fromUserTable.name,
+            userId: fromUserTable.id
+        };
+        res.status(200).json({ message: "Login successful", token: token, userInfo });
         ;
     });
 }

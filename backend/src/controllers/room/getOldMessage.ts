@@ -5,12 +5,20 @@ export default async function getOldMessage(req:Request, res: Response) {
     const client = new PrismaClient();
 
 
-    const roomId:number = req.params.chatId as unknown as number; 
+    const roomId:number = Number(req.params.chatId); 
+    
     try{
     const messages = await client.message.findMany({
-        where:{id:roomId},
+        where:{chatId:roomId},
+        include:{
+            sender:{
+                select:{
+                    name:true
+                }
+            }
+        },
         orderBy:{
-            id:"desc"
+            id:"asc"
         },
         take: 50  
     })
@@ -19,7 +27,9 @@ export default async function getOldMessage(req:Request, res: Response) {
         messages
     })
 }catch(err){
-    console.log("error")
+
+    console.log("error while getting message")
+    console.log(err)
 }
 
 }

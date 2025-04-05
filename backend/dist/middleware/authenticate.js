@@ -17,10 +17,10 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 require("dotenv/config");
 function auth(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
-        const token = req.headers.token;
+        const token = req.cookies.authToken;
         if (!token) {
-            res.status(403).json({
-                message: "token not found"
+            res.status(401).json({
+                message: "unauthorized"
             });
             return;
         }

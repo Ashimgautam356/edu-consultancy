@@ -14,12 +14,19 @@ const client_1 = require("@prisma/client");
 function getOldMessage(req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         const client = new client_1.PrismaClient();
-        const roomId = req.params.chatId;
+        const roomId = Number(req.params.chatId);
         try {
             const messages = yield client.message.findMany({
-                where: { id: roomId },
+                where: { chatId: roomId },
+                include: {
+                    sender: {
+                        select: {
+                            name: true
+                        }
+                    }
+                },
                 orderBy: {
-                    id: "desc"
+                    id: "asc"
                 },
                 take: 50
             });
@@ -28,7 +35,8 @@ function getOldMessage(req, res) {
             });
         }
         catch (err) {
-            console.log("error");
+            console.log("error while getting message");
+            console.log(err);
         }
     });
 }

@@ -42,6 +42,7 @@ wss.on('connection', function connection(ws, request) {
     const queryParams = new URLSearchParams(url.split('?')[1]);
     const token = (_a = queryParams.get('token')) !== null && _a !== void 0 ? _a : "";
     const userId = checkUser(token);
+    console.log(userId);
     // here we have to check is this user is in the db or not 
     if (userId == null) {
         ws.close();
@@ -61,6 +62,7 @@ wss.on('connection', function connection(ws, request) {
                 // exist or not , and then we can do other moidficaiton like this user can join or not and other modification
                 const user = users.find(x => x.ws === ws);
                 user === null || user === void 0 ? void 0 : user.rooms.push(parsedData.roomId);
+                console.log("joined rood chatId is", parsedData.roomId);
             }
             if (parsedData.type === 'leave-room') {
                 const user = users.find(x => x.ws === ws);
@@ -71,7 +73,8 @@ wss.on('connection', function connection(ws, request) {
             }
             if (parsedData.type === 'chat') {
                 const roomId = parsedData.roomId;
-                const message = parsedData.message;
+                const message = JSON.parse(parsedData.message);
+                console.log(message);
                 // this arch is slow i have to put this in a que to make it more optimitze
                 const existingParticipant = yield client.chatParticipant.findUnique({
                     where: {
@@ -90,14 +93,14 @@ wss.on('connection', function connection(ws, request) {
                     data: {
                         chatId: roomId,
                         senderId: userId,
-                        message: message
+                        message: message.newMessage
                     }
                 });
                 users.forEach(user => {
                     if (user.rooms.includes(roomId)) {
                         user.ws.send(JSON.stringify({
                             type: "chat",
-                            message: message,
+                            message: message.newMessage,
                             roomId
                         }));
                     }

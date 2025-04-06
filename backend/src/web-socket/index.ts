@@ -72,7 +72,6 @@ wss.on('connection',function connection(ws,request){
         const user = users.find(x => x.ws ===ws )
         user?.rooms.push(parsedData.roomId);
 
-        console.log("joined rood chatId is", parsedData.roomId )
     }
 
     if(parsedData.type === 'leave-room'){
@@ -86,7 +85,6 @@ wss.on('connection',function connection(ws,request){
     if(parsedData.type === 'chat'){
         const roomId = parsedData.roomId;
         const message = JSON.parse(parsedData.message); 
-        console.log(message)
         // this arch is slow i have to put this in a que to make it more optimitze
 
         const existingParticipant = await client.chatParticipant.findUnique({
@@ -117,7 +115,8 @@ wss.on('connection',function connection(ws,request){
                 user.ws.send(JSON.stringify({
                     type:"chat",
                     message:message.newMessage,
-                    roomId
+                    roomId,
+                    senderId:userId
                 }))
             }
         })

@@ -57,6 +57,7 @@ model Student {
   phone              String?
   countryOfInterest  String? // Example: "USA, Canada"
   subscriptionExpiry DateTime?
+  address            String?
 
   role               Role     @default(STUDENT)
   paymentStatus      PaymentStatus @default(PENDING)
@@ -85,6 +86,7 @@ model Admin{
   email         String  @unique
   passwordHash  String
   phone         String
+  address       String?
 
   role          Role @default(ADMIN)
   createdAt     DateTime @default(now())
@@ -101,7 +103,8 @@ model Employee{
   email         String @unique
   passwordHash  String
   phone         String
-  
+  address       String?
+
   role          Role @default(INSTRUCTOR)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -111,10 +114,12 @@ model Employee{
 
 
 model User{
-  id      Int  @default(autoincrement()) @id
-  name    String 
-  email   String @unique
-  role    Role @default(STUDENT)
+  id            Int  @default(autoincrement()) @id
+  name          String 
+  email         String @unique
+  role          Role @default(STUDENT)
+  imgUrl        String?
+  imgPublicId   String?
 
   payments           Payment[]
   messages          Message[]

@@ -7,6 +7,7 @@ import getCoutnry from '../controllers/getCountry';
 import getGroupChat from '../controllers/getGroupChat';
 import { auth } from '../middleware/authenticate';
 import oneChat from '../controllers/oneChat';
+import updateUser from '../controllers/updateUser';
 
 export const router =  express.Router();
 
@@ -22,3 +23,4 @@ router.get("/country",getCoutnry)
 router.get("/chat/:specificChat",oneChat)
 router.use(auth)
 router.get("/chat",getGroupChat)
+router.put("/update-user",updateUser)
